@@ -1,58 +1,64 @@
 name: build-test-deploy
 on: push
-jobs: 
+jobs:
   build-job:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: use node.js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install node
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm install
-      - run: npm run build 
+      - name: Install dependencies
+        run: npm install
+      - name: Build static website
+        run: npm run build
   test-job:
     needs: build-job
     runs-on: ubuntu-latest
-    steps: 
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: use node.js
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install node
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm install
-      - run: npm test   
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
   deploy-job:
     needs: build-job
     permissions:
       contents: write
-      pqges: write
+      pages: write
       id-token: write
     environment:
       name: production
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    steps: 
-      - name: Check out repository code
-        uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: use node.js
+      - name: Install node
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm install
-      - run: npm run build
-      - name: configure pages
-        uses: actions/configure-pages@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Build static website
+        run: npm run build
+      - name: Configure github pages
+        uses: actions/configure-pages@v5
         with:
           static_site_generator: next
-      - name: upload website
-        uses: actions/upload-pages-artifact@v1
+      - name: Upload to github pages
+        uses: actions/upload-pages-artifact@v3
         with:
           path: "./out"
-      - name: deploy
+      - name: Deploy github pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
